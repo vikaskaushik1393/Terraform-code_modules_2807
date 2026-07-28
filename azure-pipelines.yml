@@ -9,7 +9,7 @@ pool:
   name: demo
 
 variables:
-  workingDirectory: 'Environment/Pre-Prod'
+  tfDir: '$(Build.SourcesDirectory)\Environment\Pre-Prod'
 
 steps:
 
@@ -17,42 +17,42 @@ steps:
   clean: true
 
 - script: |
-    echo "===== Terraform Version ====="
+    echo ===== Terraform Version =====
     terraform version
-  displayName: 'Terraform Version'
+  displayName: Terraform Version
 
 - script: |
-    echo "===== Terraform Format ====="
+    cd "$(tfDir)"
     terraform fmt -recursive
-  displayName: 'Terraform Format'
+  displayName: Terraform Format
 
 - script: |
-    echo "===== Terraform Init ====="
+    cd "$(tfDir)"
     terraform init
-  displayName: 'Terraform Init'
+  displayName: Terraform Init
 
 - script: |
-    echo "===== Terraform Validate ====="
+    cd "$(tfDir)"
     terraform validate
-  displayName: 'Terraform Validate'
+  displayName: Terraform Validate
 
 - script: |
-    echo "===== TFLint ====="
+    cd "$(tfDir)"
     tflint --init
     tflint
-  displayName: 'TFLint Scan'
+  displayName: TFLint
 
 - script: |
-    echo "===== TFSEC ====="
+    cd "$(tfDir)"
     tfsec .
-  displayName: 'TFSEC Scan'
+  displayName: TFSEC
 
 - script: |
-    echo "===== Terraform Plan ====="
-    terraform plan 
-  displayName: 'Terraform Plan'
+    cd "$(tfDir)"
+    terraform plan -var-file=terraform.tfvars -out=tfplan
+  displayName: Terraform Plan
 
 - script: |
-    echo "===== Terraform Apply ====="
+    cd "$(tfDir)"
     terraform apply -auto-approve tfplan
-  displayName: 'Terraform Apply'
+  displayName: Terraform Apply
