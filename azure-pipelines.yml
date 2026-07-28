@@ -1,0 +1,58 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pr: none
+
+pool:
+  name: demo
+
+variables:
+  workingDirectory: 'Environment/Pre-Prod'
+
+steps:
+
+- checkout: self
+  clean: true
+
+- script: |
+    echo "===== Terraform Version ====="
+    terraform version
+  displayName: 'Terraform Version'
+
+- script: |
+    echo "===== Terraform Format ====="
+    terraform fmt -recursive
+  displayName: 'Terraform Format'
+
+- script: |
+    echo "===== Terraform Init ====="
+    terraform init
+  displayName: 'Terraform Init'
+
+- script: |
+    echo "===== Terraform Validate ====="
+    terraform validate
+  displayName: 'Terraform Validate'
+
+- script: |
+    echo "===== TFLint ====="
+    tflint --init
+    tflint
+  displayName: 'TFLint Scan'
+
+- script: |
+    echo "===== TFSEC ====="
+    tfsec .
+  displayName: 'TFSEC Scan'
+
+- script: |
+    echo "===== Terraform Plan ====="
+    terraform plan 
+  displayName: 'Terraform Plan'
+
+- script: |
+    echo "===== Terraform Apply ====="
+    terraform apply -auto-approve tfplan
+  displayName: 'Terraform Apply'
