@@ -36,16 +36,16 @@ steps:
     terraform validate
   displayName: Terraform Validate
 
-# - script: |
-#     cd "$(tfDir)"
-#     tflint --init
-#     tflint
-#   displayName: TFLint
+- script: |
+    cd "$(tfDir)"
+    tflint --init
+    tflint
+  displayName: TFLint
 
-# - script: |
-#     cd "$(tfDir)"
-#     tfsec .
-#   displayName: TFSEC
+- script: |
+    cd "$(tfDir)"
+    tfsec .
+  displayName: TFSEC
 
 - script: |
     cd "$(tfDir)"
