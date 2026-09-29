@@ -1,58 +1,64 @@
 trigger:
+  batch: true
   branches:
     include:
       - main
 
 pr: none
 
+# The demo agent must have Terraform installed on PATH.
 pool:
   name: demo
 
+# Set pipeline variables: AZURE_CLIENT_ID, AZURE_CLIENT_SECRET (secret),
+# AZURE_TENANT_ID, AZURE_SUBSCRIPTION_ID, TF_STATE_STORAGE_ACCOUNT,
+# TF_STATE_CONTAINER, and TF_STATE_KEY (the Pre-Prod state blob name).
+# Storage must already exist. Grant the principal Storage Blob Data Contributor
+# for state and deployment permissions for resources.
+# Migrate any existing local state before the first pipeline run.
 variables:
-  tfDir: '$(Build.SourcesDirectory)\Environment\Pre-Prod'
+  tfDir: '$(Build.SourcesDirectory)/Environment/Pre-Prod'
+  TF_IN_AUTOMATION: 'true'
+  TF_INPUT: 'false'
 
 steps:
-
 - checkout: self
   clean: true
 
-- script: |
-    echo ===== Terraform Version =====
-    terraform version
+- script: terraform version
   displayName: Terraform Version
 
-- script: |
-    cd "$(tfDir)"
-    terraform fmt -recursive
-  displayName: Terraform Format
+- script: terraform fmt -check -recursive
+  workingDirectory: '$(tfDir)'
+  displayName: Terraform Format Check
 
-- script: |
-    cd "$(tfDir)"
-    terraform init
+- script: terraform init -input=false -backend-config="storage_account_name=$(TF_STATE_STORAGE_ACCOUNT)" -backend-config="container_name=$(TF_STATE_CONTAINER)" -backend-config="key=$(TF_STATE_KEY)"
+  workingDirectory: '$(tfDir)'
   displayName: Terraform Init
+  env:
+    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+    ARM_TENANT_ID: $(AZURE_TENANT_ID)
+    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
 
-- script: |
-    cd "$(tfDir)"
-    terraform validate
+- script: terraform validate
+  workingDirectory: '$(tfDir)'
   displayName: Terraform Validate
 
-# - script: |
-#     cd "$(tfDir)"
-#     tflint --init
-#     tflint
-#   displayName: TFLint
-
-# - script: |
-#     cd "$(tfDir)"
-#     tfsec .
-#   displayName: TFSEC
-
-- script: |
-    cd "$(tfDir)"
-    terraform plan -var-file=terraform.tfvars -out=tfplan
+- script: terraform plan -input=false -lock-timeout=5m -var-file=terraform.tfvars -out=tfplan
+  workingDirectory: '$(tfDir)'
   displayName: Terraform Plan
+  env:
+    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+    ARM_TENANT_ID: $(AZURE_TENANT_ID)
+    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
 
-- script: |
-    cd "$(tfDir)"
-    terraform apply -auto-approve tfplan
+- script: terraform apply -input=false -lock-timeout=5m tfplan
+  workingDirectory: '$(tfDir)'
   displayName: Terraform Apply
+  env:
+    ARM_CLIENT_ID: $(AZURE_CLIENT_ID)
+    ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
+    ARM_TENANT_ID: $(AZURE_TENANT_ID)
+    ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
