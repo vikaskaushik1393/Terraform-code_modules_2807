@@ -4,13 +4,12 @@ stages:
     jobs:
       - job: plan
         steps:
-          - task: TerraformTask@5
-            inputs:
-              provider: 'azurerm'
-              command: 'init'
-              workingDirectory: '$(System.DefaultWorkingDirectory)/Enviornment/pre-prod'
-              backendServiceArm: 'demo-service'
-              backendAzureRmResourceGroupName: 'rg1'
-              backendAzureRmStorageAccountName: 'distorage1234'
-              backendAzureRmContainerName: 'tfstate'
-              backendAzureRmKey: 'pre-prod.tfstate'
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Pre-Prod'
+            backendAzureRmResourceGroupName: 'rg1'
+            backendAzureRmStorageAccountName: 'distorage1234'
+            backendAzureRmContainerName: 'tfstate'
+            backendAzureRmKey: 'key.tfstate.tfstate'
