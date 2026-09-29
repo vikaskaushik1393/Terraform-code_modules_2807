@@ -1,58 +1,16 @@
-trigger:
-  branches:
-    include:
-      - main
-
-pr: none
-
-pool:
-  name: demo
-
-variables:
-  tfDir: '$(Build.SourcesDirectory)\Environment\Pre-Prod'
-
-steps:
-
-- checkout: self
-  clean: true
-
-- script: |
-    echo ===== Terraform Version =====
-    terraform version
-  displayName: Terraform Version
-
-- script: |
-    cd "$(tfDir)"
-    terraform fmt -recursive
-  displayName: Terraform Format
-
-- script: |
-    cd "$(tfDir)"
-    terraform init
-  displayName: Terraform Init
-
-- script: |
-    cd "$(tfDir)"
-    terraform validate
-  displayName: Terraform Validate
-
-# - script: |
-#     cd "$(tfDir)"
-#     tflint --init
-#     tflint
-#   displayName: TFLint
-
-# - script: |
-#     cd "$(tfDir)"
-#     tfsec .
-#   displayName: TFSEC
-
-- script: |
-    cd "$(tfDir)"
-    terraform plan -var-file=terraform.tfvars -out=tfplan
-  displayName: Terraform Plan
-
-- script: |
-    cd "$(tfDir)"
-    terraform apply -auto-approve tfplan
-  displayName: Terraform Apply
+pool: test
+stages:
+  - stage: plan
+    jobs:
+      - job: plan
+        steps:
+          - task: TerraformTask@5
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              workingDirectory: '$(System.DefaultWorkingDirectory)/Enviornment/pre-prod'
+              backendServiceArm: 'demo-service'
+              backendAzureRmResourceGroupName: 'rg1'
+              backendAzureRmStorageAccountName: 'distorage1234'
+              backendAzureRmContainerName: 'tfstate'
+              backendAzureRmKey: 'pre-prod.tfstate'
