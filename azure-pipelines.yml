@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 trigger:
   batch: true
   branches:
@@ -62,3 +63,20 @@ steps:
     ARM_CLIENT_SECRET: $(AZURE_CLIENT_SECRET)
     ARM_TENANT_ID: $(AZURE_TENANT_ID)
     ARM_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+=======
+pool: test
+stages:
+  - stage: plan
+    jobs:
+      - job: plan
+        steps:
+        - task: TerraformTask@5
+          inputs:
+            provider: 'azurerm'
+            command: 'init'
+            workingDirectory: '$(System.DefaultWorkingDirectory)/Environment/Pre-Prod'
+            backendAzureRmResourceGroupName: 'rg1'
+            backendAzureRmStorageAccountName: 'distorage1234'
+            backendAzureRmContainerName: 'tfstate'
+            backendAzureRmKey: 'key.tfstate.tfstate'
+>>>>>>> azure/main
